@@ -1,0 +1,26 @@
+Package: jaspatial
+Type: Package
+Title: Make Spatial Analysis Easier For JA Employees
+Version: 0.1.0
+Author: person("David", "McClendon", email="david@januaryadvisors.com", role="aut")
+Maintainer: David McClendon <david@januaryadvisors.com>
+Description: This package sets up your environment for spatial analysis and mapping  
+    by loading a suite of R packages and setting options appropriately.
+    It also includes a number of custom functions for spatial analysis that we 
+    use frequently in our work.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    dplyr,
+    magrittr,
+    sf,
+    tigris, 
+    tidycensus, 
+    mapview, 
+    leaflet, 
+    rmapshaper,
+    janitor,
+    leaflet.extras,
+    leaflet.extras2
+RoxygenNote: 7.1.1
