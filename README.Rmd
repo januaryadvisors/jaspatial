@@ -1,14 +1,25 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
 
 # jaspatial
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of jaspatial is to set up your environment to conduct
-geospatial analyses at January Advisors and provide a repository of
-common functions we have developed.
+The goal of jaspatial is to set up your environment to conduct geospatial analyses at January Advisors and provide 
+a repository of common functions we have developed. 
 
 ## Installation
 
@@ -18,14 +29,11 @@ And the development version from [GitHub](https://github.com/) with:
 # install.packages("devtools")
 devtools::install_github("januaryadvisors/jaspatial")
 ```
-
 ## Set up your environment
 
-When you start a geospatial analysis, load the `jaspatial` library and
-then load all the other common geospatial packages and set the correct
-options:
+When you start a geospatial analysis, load the `jaspatial` library and then load all the other common geospatial packages and set the correct options:
 
-``` r
+```{r example}
 library(jaspatial)
 load_geo_packages() 
 #This will load: sf, tigris, tidycensus, mapview, 
@@ -34,15 +42,14 @@ set_geo_options() #Set the correct options for tigris downloads
 ```
 
 ## Clean your data
+You can also quickly clean and transform the projection of an sf object using `clean_shape`. The default projection that comes pre-loaded is `wgs84`. But you can use others, too.
 
-You can also quickly clean and transform the projection of an sf object
-using `clean_shape`. The default projection that comes pre-loaded is
-`wgs84`. But you can use others, too.
-
-``` r
+```{r clean_shape}
 clean_tx_counties <- clean_shape(tx_counties) #The default 
 
 #Or change projection
 utm14n <- st_crs("+proj=utm +zone=14 +ellps=GRS80 +datum=NAD83 +units=m +no_defs +towgs84=0,0,0")
 clean_tx_counties_utm14n <- clean_shape(tx_counties, utm14n)
 ```
+
+
