@@ -23,5 +23,6 @@ Imports:
     rmapshaper,
     janitor,
     leaflet.extras,
-    leaflet.extras2
-RoxygenNote: 7.1.1
+    leaflet.extras2,
+    htmltools
+RoxygenNote: 7.1.2

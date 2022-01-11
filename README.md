@@ -46,3 +46,20 @@ clean_tx_counties <- clean_shape(tx_counties) #The default
 utm14n <- st_crs("+proj=utm +zone=14 +ellps=GRS80 +datum=NAD83 +units=m +no_defs +towgs84=0,0,0")
 clean_tx_counties_utm14n <- clean_shape(tx_counties, utm14n)
 ```
+
+## Using leaflet
+
+This package allows you to get up and running in leaflet really quickly
+with `ja_base_map`. The one trick is that you need to add a mapPane
+option (=‘polygons’) to any layers you want to appear underneath the map
+label names.
+
+``` r
+ja_base_map(.zoom_level = 9) %>% 
+  addPolygons(
+    data = clean_tx_counties,
+    options = leafletOptions(pane = "polygons")
+  )
+```
+
+<img src="man/figures/README-ja_base_map-1.png" width="100%" />
