@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 ```
 
 # jaspatial
-
+![jaspatial logo](jaspatial_logo.png)
 <!-- badges: start -->
 <!-- badges: end -->
 

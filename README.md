@@ -3,7 +3,7 @@
 
 # jaspatial
 
-<!-- badges: start -->
+![jaspatial logo](jaspatial_logo.png) <!-- badges: start -->
 <!-- badges: end -->
 
 The goal of jaspatial is to set up your environment to conduct
