@@ -12,4 +12,6 @@ set_geo_options <- function() {
   options(tigris_class = "sf",
           tigris_use_cache = TRUE)
 
+  sf_use_s2(F)
+
 }

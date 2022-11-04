@@ -14,10 +14,11 @@ knitr::opts_chunk$set(
 ```
 
 # jaspatial
+<!-- badges: start -->
 ```{r, out.width = "200px", echo=FALSE}
 knitr::include_graphics("jaspatial_logo.png")
 ```
-<!-- badges: start -->
+
 <!-- badges: end -->
 
 The goal of jaspatial is to set up your environment to conduct geospatial analyses at January Advisors and provide 

@@ -15,6 +15,7 @@ load_geo_packages <- function() {
          leaflet,
          rmapshaper,
          leaflet.extras,
-         leaflet.extras2
+         leaflet.extras2,
+         leaflegend
          )
 }

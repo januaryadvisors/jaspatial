@@ -23,5 +23,9 @@ You can also set the initial coordinates and zoom level for your map. Defaults t
 One catch is that you must specify any heatmap layers with mapPane argument; see example below.
 }
 \examples{
-ja_base_map()
+ja_base_map() \%>\%
+leaflet::addPolygons(
+data = clean_tx_counties,
+options = leaflet::leafletOptions(pane = "polygons")
+)
 }
