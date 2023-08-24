@@ -4,7 +4,15 @@
 \alias{ja_base_map}
 \title{Create JA base map layer in leaflet}
 \usage{
-ja_base_map(.lon = -95.3103, .lat = 29.7752, .zoom_level = 9)
+ja_base_map(
+  .lon = -95.3103,
+  .lat = 29.7752,
+  .zoom_level = 9,
+  .minZoom = 0,
+  .maxZoom = 18,
+  .dragging = F,
+  .tap = F
+)
 }
 \arguments{
 \item{.lon}{Longitude for setting center of map}
@@ -12,9 +20,14 @@ ja_base_map(.lon = -95.3103, .lat = 29.7752, .zoom_level = 9)
 \item{.lat}{Latitude for setting center of map}
 
 \item{.zoom_level}{Zoom level for setting map}
-}
-\value{
 
+\item{.minZoom}{Set minimum Zoom level for map}
+
+\item{.maxZoom}{Set max zoom level for map}
+
+\item{.dragging}{turn dragging ability on/off, defaults False}
+
+\item{.tap}{turn tap ability on/off, default False}
 }
 \description{
 Use the standard JA base map layer in leaflet.

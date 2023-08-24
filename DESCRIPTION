@@ -25,4 +25,4 @@ Imports:
     leaflet.extras,
     leaflet.extras2,
     htmltools
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3

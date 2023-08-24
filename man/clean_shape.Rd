@@ -11,9 +11,6 @@ clean_shape(.data, .crs = wgs84)
 
 \item{.crs}{st_crs formatted projection; defaults to wgs84}
 }
-\value{
-
-}
 \description{
 This function uses janitor::clean_names() to standardize headers and sets crs to wgs84 by default.
 Data must already by in sf format.

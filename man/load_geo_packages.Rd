@@ -6,9 +6,6 @@
 \usage{
 load_geo_packages()
 }
-\value{
-
-}
 \description{
 Automatically loads geospatial suite of packages for analysis, including
 sf, tigris, tidycensus, leaflet, and more.

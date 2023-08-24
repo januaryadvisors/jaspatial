@@ -6,9 +6,6 @@
 \usage{
 set_geo_options()
 }
-\value{
-
-}
 \description{
 Set the options for tigris and other spatial packages at start of analysis
 }

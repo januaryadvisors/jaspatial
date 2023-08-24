@@ -10,14 +10,16 @@
 #' @param .zoom_level Zoom level for setting map
 #' @param .minZoom Set minimum Zoom level for map
 #' @param .maxZoom Set max zoom level for map
-#' @param .dragging turn dragging ability on/off; defaults False
-#' @param .tap turn tap ability on/off; default False
-#'
-#' @return
-#' @export
+#' @param .dragging turn dragging ability on/off, defaults False
+#' @param .tap turn tap ability on/off, default False
 #'
 #' @examples
-#' ja_base_map()
+#' ja_base_map() %>%
+#' leaflet::addPolygons(
+#' data = clean_tx_counties,
+#' options = leaflet::leafletOptions(pane = "polygons")
+#' )
+
 ja_base_map <- function(.lon = -95.3103, .lat = 29.7752, .zoom_level = 9,
                         .minZoom = 0, .maxZoom=18, .dragging = F, .tap=F) {
 
