@@ -22,10 +22,8 @@ ja_base_map <- function(.lon = -95.3103, .lat = 29.7752, .zoom_level = 9,
                         .minZoom = 0, .maxZoom=18, .dragging = F, .tap=F) {
 
   leaflet::leaflet(
-    minZoom = .minZoom,
-    maxZoom = .maxZoom,
-    dragging = .dragging,
-    tap = .tap
+    options = leafletOptions(minZoom = .minZoom, maxZoom = .maxZoom,
+                             dragging = .dragging, tap = .tap)
   ) %>%
     leaflet::addTiles(
       attribution = htmltools::HTML(
