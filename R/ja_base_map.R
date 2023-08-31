@@ -21,7 +21,7 @@
 #' )
 
 ja_base_map <- function(.lon = -95.3103, .lat = 29.7752, .zoom_level = 9,
-                        .minZoom = 0, .maxZoom=18, .dragging = F, .tap=F) {
+                        .minZoom = 0, .maxZoom=18, .dragging = T, .tap=T) {
 
   leaflet::leaflet(
     options = leafletOptions(minZoom = .minZoom, maxZoom = .maxZoom,
