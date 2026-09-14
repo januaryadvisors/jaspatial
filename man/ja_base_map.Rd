@@ -10,8 +10,9 @@ ja_base_map(
   .zoom_level = 9,
   .minZoom = 0,
   .maxZoom = 18,
-  .dragging = F,
-  .tap = F
+  .dragging = T,
+  .tap = T,
+  .variant = "CartoDB.Positron"
 )
 }
 \arguments{
@@ -28,12 +29,21 @@ ja_base_map(
 \item{.dragging}{turn dragging ability on/off, defaults False}
 
 \item{.tap}{turn tap ability on/off, default False}
+
+\item{.variant}{CARTO basemap style. Defaults to Positron. Pass any
+leaflet-provider name (\code{"CartoDB.DarkMatter"}) and the matching
+no-labels and labels-only layers are chosen for you.}
 }
 \description{
 Use the standard JA base map layer in leaflet.
 It includes OSM address search, easyPrint, and map label tiles on top.
 You can also set the initial coordinates and zoom level for your map. Defaults to Harris County, TX.
 One catch is that you must specify any heatmap layers with mapPane argument; see example below.
+}
+\details{
+Basemap tiles come from CARTO and need an API key, or they render watermarked.
+See \code{\link{ja_carto_key}} for where the key is read from; the short version
+is to put \code{CARTO_API_KEY=...} in your \code{~/.Renviron}.
 }
 \examples{
 ja_base_map() \%>\%

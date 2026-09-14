@@ -55,8 +55,66 @@ utm14n <- st_crs("+proj=utm +zone=14 +ellps=GRS80 +datum=NAD83 +units=m +no_defs
 clean_tx_counties_utm14n <- clean_shape(tx_counties, utm14n)
 ```
 
+## Set your CARTO basemap key (do this once)
+
+CARTO watermarks basemap tiles requested without an API key, so every map renders
+with "API KEY REQUIRED" stamped across it. Set the key once and every JA project on
+your machine picks it up:
+
+``` r
+usethis::edit_r_environ()   # add the line below, then restart R
+# CARTO_API_KEY=your_key_here
+```
+
+Get a key at <https://carto.com/basemaps/apikey/>. Check that it resolved with
+`ja_carto_key()`.
+
+`jaspatial` looks in four places, first non-empty wins:
+
+1. `options(jaspatial.carto_key = "...")`, a session override
+2. `CARTO_API_KEY` in a project `.env` (needs the `dotenv` package)
+3. `Sys.getenv("CARTO_API_KEY")`, which covers `~/.Renviron` and CI
+4. a `carto: CARTO_API_KEY` entry in `config.yml` (needs the `config` package)
+
+A project `.env` beats `~/.Renviron` on purpose, so a project can pin its own key.
+
+Without a key nothing breaks: you get one warning and a watermarked map.
+
+**Deploying to shinyapps.io** does not carry your `.env`, so pass the key through:
+
+``` r
+rsconnect::deployApp(envVars = "CARTO_API_KEY")
+```
+
+The key is used client-side and is visible in any rendered HTML. That is how
+browser basemaps work. Keeping it out of the source tree is about rotation, not
+secrecy. Restrict it by domain in the CARTO dashboard, remembering that dashboards
+iframed on client sites need those domains allowed too.
+
+## Check what you published
+
+Rendered pages regress quietly: nothing errors, the tiles just come back stamped.
+After a render, and before publishing:
+
+``` r
+ja_audit_basemaps("docs")
+#> Scanned 106 files under docs; 89 draw a basemap.
+#> All basemaps are keyed.
+```
+
 ## Using leaflet
 This package allows you to get up and running in leaflet really quickly with `ja_base_map`. The one trick is that you need to add a mapPane option (='polygons') to any layers you want to appear underneath the map label names.
+
+Building your own `leaflet()` instead? Use `add_carto_basemap()` as a drop-in for
+`addProviderTiles("CartoDB.Positron")`, and `add_carto_labels()` for the labels
+overlay. `addProviderTiles()` cannot carry a key, because the CartoDB entry in the
+leaflet-providers registry has no placeholder for one.
+
+``` r
+leaflet() %>%
+  add_carto_basemap() %>%
+  addPolygons(data = clean_tx_counties)
+```
 
 ```{r ja_base_map, warning=FALSE}
 ja_base_map(.zoom_level = 9) %>% 

@@ -1,7 +1,7 @@
 Package: jaspatial
 Type: Package
 Title: Make Spatial Analysis Easier For JA Employees
-Version: 0.1.0
+Version: 0.2.0
 Author: person("David", "McClendon", email="david@januaryadvisors.com", role="aut")
 Maintainer: David McClendon <david@januaryadvisors.com>
 Description: This package sets up your environment for spatial analysis and mapping  
@@ -24,5 +24,10 @@ Imports:
     janitor,
     leaflet.extras,
     leaflet.extras2,
-    htmltools
-RoxygenNote: 7.2.3
+    htmltools,
+    leaflegend
+Suggests:
+    dotenv,
+    config,
+    here
+Config/roxygen2/version: 8.0.0
