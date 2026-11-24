@@ -16,7 +16,9 @@ directory.}
 }
 \value{
 A data frame with one row per file: \code{file}, \code{keyed},
-  \code{unkeyed}, \code{latent}, \code{status}. Returned invisibly unless
+  \code{unkeyed}, \code{latent}, \code{status}, \code{local_switch} (the page
+  also carries the localhost-only key; see \code{\link{ja_carto_key_local}}).
+  Returned invisibly unless
   \code{quiet = TRUE}, since the printed summary is the point interactively.
 }
 \description{

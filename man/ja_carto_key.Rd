@@ -28,6 +28,10 @@ project-specific key wins over a machine-wide default in \code{~/.Renviron}.
 Setting it once in \code{~/.Renviron} is the simplest setup and covers every
 project on your machine:
 \code{CARTO_API_KEY=your_key_here}
+
+If this key is restricted to your published domains, add a second,
+localhost-only key as \code{CARTO_API_KEY_LOCAL} so maps you view on your
+own machine are not watermarked. See \code{\link{ja_carto_key_local}}.
 }
 \examples{
 \dontrun{

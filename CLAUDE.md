@@ -56,6 +56,44 @@ carry a project `.env`. Hard-failing would mean a broken deploy instead of a wat
 The warning fires once per session via `.jaspatial_state`, because `ja_base_map()` adds
 two tile layers and a naive warning fires twice per map.
 
+## Two keys: production and local (0.3.0)
+
+The production key (`CARTO_API_KEY`) is domain-restricted, so it watermarks on David's
+machine. CARTO's rule: a key that lists `localhost`, `127.0.0.1` or `*.localhost` cannot
+also list public sites, and `[::1]` is not supported. So local work needs a second key,
+`CARTO_API_KEY_LOCAL`, resolved by `ja_carto_key_local()` through the same chain as
+`ja_carto_key()` (option `jaspatial.carto_key_local` first). Both share `.carto_lookup()`.
+
+**Precedence:** option, then project `.env`, then `Sys.getenv()` (`~/.Renviron`), then
+`config.yml` (`carto: CARTO_API_KEY_LOCAL`).
+
+**Why the switch is in the browser, not at render time.** Static pages are rendered on
+David's machine and then published (purpose-built docs on GitHub Pages). At render time
+there is no way to know whether a file will be previewed or published, so picking a key
+in R would either watermark the published page or bake in the wrong key. Instead the tile
+URL always carries the production key, and `.carto_local_swap()` attaches an `onRender`
+hook that rewrites `key=` to the local key only when the hostname is `localhost`,
+`127.0.0.1` or `*.localhost`. That covers the RStudio/Positron viewer, local Shiny and
+local preview servers. shinyapps.io, GitHub Pages and client iframes keep the production
+key (verified with Playwright, 2026-11-24).
+
+**`file://` cannot work with either key.** Browsers send no Referer from a file opened
+off disk, and CARTO answers 403 to a keyed request without one (curl-tested both keys,
+2026-11-24: production key 200 only on its domains; local key 200 on 127.0.0.1 and
+localhost, 403 on github.io and with no Referer). Off-domain requests get a 403 and a
+blank tile, not the watermark; the watermark is for unkeyed requests. Preview knitted
+HTML through a local server (`servr::httd()`, `python3 -m http.server`).
+
+**The local key ships in every page rendered on a machine that has it.** That is safe only
+because CARTO refuses it on public domains. `ja_audit_basemaps()` reports these pages in
+its `local_switch` column and says so in its summary; that is expected, not a finding.
+
+**No local key, no change.** `.carto_local_swap()` returns the map untouched, so teammates
+and CI render byte-for-byte what 0.2.0 did. The hook is added once per map (it checks for
+`.CARTO_LOCAL_MARKER` in `map$jsHooks`), though `ja_base_map()` adds two tile layers.
+
+**Not covered:** tile layers added later through `leaflet::leafletProxy()`.
+
 ## `ja_audit_basemaps()` — both failure modes it was calibrated against
 
 Changing the matching logic risks reintroducing one of these. Both were real, found by
@@ -74,8 +112,10 @@ The no-basemap check needs both signals absent.
 An unkeyed `.../{variant}/...` template inside bundled providers JS is inert unless
 something calls it, so it is reported as `latent`, not as a finding.
 
-Calibration targets: `purpose-built/docs` should come back clean (89 basemaps, all keyed);
-`civicap-data-creation` should report ~68 unkeyed.
+Calibration targets: `purpose-built/docs` should come back clean (90 basemaps, all keyed,
+as of 2026-11-24); `civicap-data-creation` reported ~68 unkeyed in September and 46 on
+2026-11-24 after some pages were keyed. Re-baseline with the previous commit's audit code
+before blaming a change.
 
 ## Shipping a change
 

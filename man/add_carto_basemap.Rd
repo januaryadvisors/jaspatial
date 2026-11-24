@@ -26,6 +26,9 @@ The map, with the basemap layer added.
 }
 \description{
 Drop-in replacement for \code{addProviderTiles("CartoDB.Positron")}.
+When \code{CARTO_API_KEY_LOCAL} is set, the map also switches to that key
+when viewed locally; see \code{\link{ja_carto_key_local}}. Tile layers added
+later through \code{leaflet::leafletProxy()} are not switched.
 }
 \examples{
 \dontrun{

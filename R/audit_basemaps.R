@@ -29,7 +29,9 @@
 #' @param quiet Suppress the console summary and return the data frame only.
 #'
 #' @return A data frame with one row per file: \code{file}, \code{keyed},
-#'   \code{unkeyed}, \code{latent}, \code{status}. Returned invisibly unless
+#'   \code{unkeyed}, \code{latent}, \code{status}, \code{local_switch} (the page
+#'   also carries the localhost-only key; see \code{\link{ja_carto_key_local}}).
+#'   Returned invisibly unless
 #'   \code{quiet = TRUE}, since the printed summary is the point interactively.
 #' @export
 #'
@@ -77,6 +79,13 @@ ja_audit_basemaps <- function(path = ".", recursive = TRUE, quiet = FALSE) {
     message("\nRe-render with jaspatial (>= 0.2.0) loaded. For pages that must not ",
             "be\nre-rendered, key the tiles in place instead.")
   }
+  local <- sum(out$local_switch %in% TRUE)
+  if (local > 0L) {
+    message(sprintf("\n%d page%s also the localhost-only CARTO key ",
+                    local, if (local == 1L) " carries" else "s carry"),
+            "(CARTO_API_KEY_LOCAL).\nExpected: CARTO refuses that key on public ",
+            "domains, so published copies use the production key.")
+  }
   if (latent > 0L) {
     message(sprintf("\n(%d page%s carry an unkeyed URL template in bundled ",
                     latent, if (latent == 1L) "" else "s"),
@@ -121,17 +130,21 @@ ja_audit_basemaps <- function(path = ".", recursive = TRUE, quiet = FALSE) {
 
   unkeyed <- calls + concrete_unkeyed
   status <- if (unkeyed > 0L) "unkeyed" else "keyed"
-  .audit_row(f, keyed, unkeyed, latent, status)
+  .audit_row(f, keyed, unkeyed, latent, status,
+             local_switch = grepl(.CARTO_LOCAL_MARKER, txt, fixed = TRUE))
 }
 
-.audit_row <- function(file, keyed, unkeyed, latent, status) {
+.audit_row <- function(file, keyed, unkeyed, latent, status,
+                       local_switch = FALSE) {
   data.frame(file = file, keyed = keyed, unkeyed = unkeyed, latent = latent,
-             status = status, stringsAsFactors = FALSE)
+             status = status, local_switch = local_switch,
+             stringsAsFactors = FALSE)
 }
 
 .empty_audit <- function() {
   data.frame(file = character(), keyed = integer(), unkeyed = integer(),
-             latent = integer(), status = character(), stringsAsFactors = FALSE)
+             latent = integer(), status = character(), local_switch = logical(),
+             stringsAsFactors = FALSE)
 }
 
 .match_group <- function(txt, pattern) {

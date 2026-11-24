@@ -72,6 +72,10 @@
 #' project on your machine:
 #' \code{CARTO_API_KEY=your_key_here}
 #'
+#' If this key is restricted to your published domains, add a second,
+#' localhost-only key as \code{CARTO_API_KEY_LOCAL} so maps you view on your
+#' own machine are not watermarked. See \code{\link{ja_carto_key_local}}.
+#'
 #' @return The key, or \code{""} when none is configured.
 #' @export
 #'
@@ -80,7 +84,48 @@
 #' nzchar(ja_carto_key())
 #' }
 ja_carto_key <- function() {
-  key <- getOption("jaspatial.carto_key", "")
+  .carto_lookup("CARTO_API_KEY", "jaspatial.carto_key", config_alias = "key")
+}
+
+#' Resolve the local-development CARTO key
+#'
+#' CARTO keys restricted to public domains watermark tiles on your own machine.
+#' CARTO's answer is a second key that lists only \code{localhost},
+#' \code{127.0.0.1} and \code{*.localhost} (a key that lists those cannot also
+#' list public sites). Set it as \code{CARTO_API_KEY_LOCAL}, looked up in the
+#' same places as \code{\link{ja_carto_key}}, with the option
+#' \code{jaspatial.carto_key_local} first.
+#'
+#' When it is set, \code{add_carto_basemap()} and \code{add_carto_labels()} keep
+#' the production key in the tile URL and add a small script that switches to
+#' the local key only when the page is served from \code{localhost},
+#' \code{127.0.0.1} or \code{*.localhost}: the RStudio or Positron viewer, a local
+#' Shiny app, or a local preview server. Published pages
+#' keep using the production key. The switch happens in the browser because a
+#' rendered HTML file cannot know at render time whether it will be published.
+#'
+#' The local key therefore ships inside every page rendered on a machine that has
+#' it. That is safe only because CARTO refuses it on any public domain.
+#'
+#' An HTML file opened straight from disk (\code{file://}) shows no basemap with
+#' either key, because the browser sends no referrer and CARTO refuses keyed
+#' requests without one. Preview it through a local server instead, for example
+#' \code{servr::httd()} or \code{python3 -m http.server}.
+#'
+#' @return The key, or \code{""} when none is configured.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' nzchar(ja_carto_key_local())
+#' }
+ja_carto_key_local <- function() {
+  .carto_lookup("CARTO_API_KEY_LOCAL", "jaspatial.carto_key_local")
+}
+
+# One lookup chain for both keys: option, project .env, environment, config.yml.
+.carto_lookup <- function(var, option, config_alias = NULL) {
+  key <- getOption(option, "")
   if (is.character(key) && length(key) == 1L && nzchar(key)) return(key)
 
   # A project .env, read lazily. A package must never read files at load time,
@@ -98,19 +143,56 @@ ja_carto_key <- function() {
     }
   }
 
-  key <- Sys.getenv("CARTO_API_KEY", "")
+  key <- Sys.getenv(var, "")
   if (nzchar(key)) return(key)
 
   # config.yml, where five JA map repos already keep map credentials.
   if (requireNamespace("config", quietly = TRUE) && file.exists("config.yml")) {
     cfg <- try(config::get(file = "config.yml"), silent = TRUE)
     if (!inherits(cfg, "try-error") && is.list(cfg)) {
-      key <- cfg$carto$CARTO_API_KEY %||% cfg$carto$key %||% ""
+      key <- cfg$carto[[var]] %||%
+        (if (!is.null(config_alias)) cfg$carto[[config_alias]]) %||% ""
       if (is.character(key) && length(key) == 1L && nzchar(key)) return(key)
     }
   }
 
   ""
+}
+
+# Marker that identifies the local-key script, so a map with both a basemap and
+# a label layer gets it once.
+.CARTO_LOCAL_MARKER <- "/* jaspatial: carto local key */"
+
+# Hostnames CARTO accepts on a localhost key. No IPv6: CARTO does not support
+# [::1]. file:// pages are left alone: browsers send no Referer from them, and
+# CARTO answers 403 to both keys without one (tested 2026-11-24).
+.CARTO_LOCAL_JS <- paste0(.CARTO_LOCAL_MARKER, "
+function(el, x, data) {
+  var h = window.location.hostname;
+  var local = h === 'localhost' || h === '127.0.0.1' || /\\.localhost$/.test(h);
+  if (!local) return;
+  this.eachLayer(function(layer) {
+    var url = layer._url;
+    if (!(layer instanceof L.TileLayer) || !url ||
+        !/basemaps\\.cartocdn\\.com/.test(url)) return;
+    url = /[?&]key=/.test(url) ?
+      url.replace(/([?&]key=)[^&]*/, '$1' + data.key) :
+      url + (url.indexOf('?') > -1 ? '&' : '?') + 'key=' + data.key;
+    layer.setUrl(url);
+  });
+}")
+
+# Attach the local-key switch when a local key is configured. Without one the
+# widget is untouched, so teammates and CI render exactly what 0.2.0 did.
+.carto_local_swap <- function(map) {
+  key <- ja_carto_key_local()
+  if (!nzchar(key)) return(map)
+  hooks <- map$jsHooks$render
+  if (any(vapply(hooks, function(h) startsWith(h$code, .CARTO_LOCAL_MARKER),
+                 logical(1)))) {
+    return(map)
+  }
+  htmlwidgets::onRender(map, .CARTO_LOCAL_JS, data = list(key = key))
 }
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
@@ -167,6 +249,9 @@ ja_carto_tile_url <- function(variant = "light_all") {
 #' Add a keyed CARTO basemap to a leaflet map
 #'
 #' Drop-in replacement for \code{addProviderTiles("CartoDB.Positron")}.
+#' When \code{CARTO_API_KEY_LOCAL} is set, the map also switches to that key
+#' when viewed locally; see \code{\link{ja_carto_key_local}}. Tile layers added
+#' later through \code{leaflet::leafletProxy()} are not switched.
 #'
 #' @param map A leaflet map
 #' @param variant A leaflet-provider name or raw CARTO slug
@@ -183,13 +268,14 @@ ja_carto_tile_url <- function(variant = "light_all") {
 #' }
 add_carto_basemap <- function(map, variant = "light_all",
                               attribution = .CARTO_ATTRIBUTION, ...) {
-  leaflet::addTiles(
+  map <- leaflet::addTiles(
     map,
     urlTemplate = ja_carto_tile_url(variant),
     attribution = attribution,
     options = .carto_tile_options(),
     ...
   )
+  .carto_local_swap(map)
 }
 
 #' Add a keyed CARTO label layer to a leaflet map
@@ -216,7 +302,7 @@ add_carto_basemap <- function(map, variant = "light_all",
 #' }
 add_carto_labels <- function(map, variant = "light_only_labels",
                              pane = "maplabels", group = "map labels", ...) {
-  leaflet::addTiles(
+  map <- leaflet::addTiles(
     map,
     urlTemplate = ja_carto_tile_url(variant),
     attribution = NULL,
@@ -224,4 +310,5 @@ add_carto_labels <- function(map, variant = "light_only_labels",
     group = group,
     ...
   )
+  .carto_local_swap(map)
 }

@@ -80,6 +80,21 @@ A project `.env` beats `~/.Renviron` on purpose, so a project can pin its own ke
 
 Without a key nothing breaks: you get one warning and a watermarked map.
 
+**Working locally with a domain-restricted key.** A key limited to your published
+domains leaves maps blank in the RStudio viewer and local Shiny, because CARTO
+refuses it off those domains. Create a second CARTO key that lists only `localhost`, `127.0.0.1` and
+`*.localhost`, and add it next to the first in `~/.Renviron`:
+
+``` r
+# CARTO_API_KEY_LOCAL=your_local_key
+```
+
+Maps then switch to it automatically when served from `localhost` or `127.0.0.1`
+(the RStudio viewer, local Shiny, a local preview server) and keep the production
+key everywhere else, including pages you render locally and publish. An HTML file
+opened straight from disk shows no basemap with either key, so preview it through
+a local server such as `servr::httd()`.
+
 **Deploying to shinyapps.io** does not carry your `.env`, so pass the key through:
 
 ``` r
